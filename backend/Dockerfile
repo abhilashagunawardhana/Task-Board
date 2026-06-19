@@ -19,7 +19,7 @@ RUN npm ci --only=production
 # Copy server code
 COPY server.js ./
 
-EXPOSE 5001
+EXPOSE 5000
 
 ENV NODE_ENV=production
 
