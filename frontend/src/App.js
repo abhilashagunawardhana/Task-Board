@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/tasks';
+const getApiUrl = () => {
+  // Use explicitly set environment variable if it points to a remote IP or domain
+  if (process.env.REACT_APP_API_URL && !process.env.REACT_APP_API_URL.includes('localhost')) {
+    return process.env.REACT_APP_API_URL;
+  }
+  // Fall back to the hostname of the server serving the frontend
+  const hostname = typeof window !== 'undefined' && window.location && window.location.hostname
+    ? window.location.hostname
+    : 'localhost';
+  return `http://${hostname}:5000/api/tasks`;
+};
+
+const API_URL = getApiUrl();
 
 function App() {
   const [tasks, setTasks] = useState([]);
