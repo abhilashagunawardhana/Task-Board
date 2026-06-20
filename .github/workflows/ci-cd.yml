@@ -1,0 +1,207 @@
+# Name of the GitHub Actions workflow visible in the GitHub UI actions tab
+name: Parallel Monorepo CI/CD
+
+# Define trigger conditions for the workflow
+on:
+  # Trigger the workflow on pushes to the main branch
+  push:
+    branches: [ main ]
+  # Trigger the workflow on pull requests targeting the main branch
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # =========================================================================
+  # Job 1: Path Filtering Detection
+  # Analyzes which directories contain changes to prevent running redundant jobs.
+  # =========================================================================
+  detect-changes:
+    name: Detect Directory Changes
+    runs-on: ubuntu-latest
+    # Define outputs to expose variables to dependent jobs in the workflow
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      # Step 1.1: Clone the repository files onto the runner
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      # Step 1.2: Check paths of changed files against our configured filters
+      - name: Detect Modified Paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # Define filters. If files in these directories are modified, outputs will be 'true'.
+          # Changes to docker-compose.yml or the CI/CD file will trigger both pipelines.
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'docker-compose.yml'
+              - '.github/workflows/ci-cd.yml'
+            frontend:
+              - 'frontend/**'
+              - 'docker-compose.yml'
+              - '.github/workflows/ci-cd.yml'
+
+  # =========================================================================
+  # Backend Job Pipeline
+  # Runs linting, testing, security audits, and verifies Docker compilation.
+  # =========================================================================
+  backend-checks:
+    name: Backend CI Checks
+    needs: detect-changes
+    # Run only if backend files (or root pipeline files) contain changes
+    if: ${{ needs.detect-changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Step 2.1: Clone code
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      # Step 2.2: Provision Node.js with caching configured for rapid rebuilds
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      # Step 2.3: Install backend node packages using clean-install (npm ci)
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: backend
+
+      # Step 2.4: Execute ESLint to check for code quality and style errors
+      - name: Run ESLint Checks
+        run: npm run lint
+        working-directory: backend
+
+      # Step 2.5: Execute Jest unit tests to verify Express endpoint responses
+      - name: Run Unit Tests
+        run: npm test
+        working-directory: backend
+
+      # Step 2.6: Scan packages for known high/critical security vulnerabilities
+      - name: Run Security Audit
+        run: npm run audit
+        working-directory: backend
+
+  backend-build:
+    name: Verify Backend Docker Build
+    needs: [detect-changes, backend-checks]
+    # Runs only if the checks succeeded and the backend output is flagged true
+    if: ${{ needs.detect-changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Step 3.1: Clone repository
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      # Step 3.2: Verify that the backend Dockerfile builds correctly in a container
+      - name: Build Docker Container (Verification)
+        run: docker build -t task-board-backend:test ./backend
+
+  # =========================================================================
+  # Frontend Job Pipeline
+  # Runs linting, component testing, and builds production static bundles.
+  # =========================================================================
+  frontend-checks:
+    name: Frontend CI Checks
+    needs: detect-changes
+    # Run only if frontend files (or root pipeline files) contain changes
+    if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Step 4.1: Clone code
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      # Step 4.2: Provision Node.js with package dependency caching
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # Step 4.3: Install React node packages cleanly
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      # Step 4.4: Execute ESLint to verify codebase standards
+      - name: Run ESLint Checks
+        run: npm run lint
+        working-directory: frontend
+
+      # Step 4.5: Execute Jest tests (with mocked API calls) in non-watch mode
+      - name: Run Component Tests
+        run: npm test
+        working-directory: frontend
+
+  frontend-build:
+    name: Verify Frontend Build Compilation
+    needs: [detect-changes, frontend-checks]
+    # Runs only if frontend checks passed and frontend changes were detected
+    if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Step 5.1: Clone repository
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      # Step 5.2: Provision Node.js environment
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # Step 5.3: Install packages
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      # Step 5.4: Compile production-grade static assets (HTML/CSS/JS) into /build
+      - name: Compile Production Build Assets
+        run: npm run build
+        working-directory: frontend
+
+  # =========================================================================
+  # Production Deployment CD Pipeline
+  # Securely connects to VM and updates the active running containers.
+  # =========================================================================
+  deploy-production:
+    name: Deploy to Azure VM
+    needs: [backend-build, frontend-build]
+    # IMPORTANT execution logic check:
+    # 1. always(): Runs even if some need jobs were skipped due to path filtering.
+    # 2. backend-build and frontend-build must NOT have failed (must be 'success' or 'skipped').
+    # 3. At least one of the build stages must have succeeded (we don't deploy if nothing ran).
+    if: |
+      always() &&
+      (needs.backend-build.result == 'success' || needs.backend-build.result == 'skipped') &&
+      (needs.frontend-build.result == 'success' || needs.frontend-build.result == 'skipped') &&
+      (needs.backend-build.result == 'success' || needs.frontend-build.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      # Step 6.1: Connect to Azure VM using SSH private key and run deployment commands
+      - name: Run Deployment Scripts on Azure VM via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Navigate to the monorepo folder cloned on the VM
+            cd ~/Task-Board
+            
+            # Fetch latest git commits pushed to main branch
+            git pull origin main
+            
+            # Recompile and restart containers silently in detached background mode.
+            # Passes VM_PUBLIC_IP to compile React with the correct remote hostname URL.
+            VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }} docker-compose up --build -d

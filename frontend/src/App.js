@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
+// Resolves the backend API endpoint dynamically.
+// If an environment variable is set at compile-time to a remote host, we use that.
+// Otherwise, we dynamically fetch the VM's hostname (or localhost) from the browser's location bar,
+// allowing zero-configuration deployments on any server.
 const getApiUrl = () => {
   // Use explicitly set environment variable if it points to a remote IP or domain
   if (process.env.REACT_APP_API_URL && !process.env.REACT_APP_API_URL.includes('localhost')) {
@@ -15,17 +19,19 @@ const getApiUrl = () => {
 const API_URL = getApiUrl();
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState('');
-  const [status, setStatus] = useState('Todo');
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // State variables for application management
+  const [tasks, setTasks] = useState([]);      // List of tasks from the server
+  const [title, setTitle] = useState('');      // Form input for task title
+  const [status, setStatus] = useState('Todo'); // Form input for task column/status
+  const [error, setError] = useState(null);    // Error messages if backend call fails
+  const [loading, setLoading] = useState(true); // Loading spinner toggle
 
-  // Fetch tasks from API
+  // Automatically retrieve tasks when the application component mounts
   useEffect(() => {
     fetchTasks();
   }, []);
 
+  // API Call: Fetch tasks list from the backend
   const fetchTasks = async () => {
     try {
       setLoading(true);
@@ -44,7 +50,7 @@ function App() {
     }
   };
 
-  // Submit new task
+  // API Call: Create new task via POST request
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -63,6 +69,7 @@ function App() {
       }
 
       const newTask = await response.json();
+      // Append the new task directly to state to update UI immediately without page reload
       setTasks((prevTasks) => [...prevTasks, newTask]);
       setTitle('');
       setStatus('Todo');
@@ -73,7 +80,7 @@ function App() {
     }
   };
 
-  // Filter tasks by column
+  // Filter tasks locally by status for each column
   const todoTasks = tasks.filter((t) => t.status === 'Todo');
   const inProgressTasks = tasks.filter((t) => t.status === 'In Progress');
   const doneTasks = tasks.filter((t) => t.status === 'Done');

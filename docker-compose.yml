@@ -1,21 +1,35 @@
+# Docker Compose configuration specification version
 version: '3.8'
 
 services:
+  # ==========================================
+  # Backend Service Configuration (Express API)
+  # ==========================================
   backend:
+    # Build container from Dockerfile in backend directory
     build: ./backend
+    # Map external host port 5000 to internal container port 5000
     ports:
       - "5000:5000"
+    # Environment variables injected inside container at runtime
     environment:
       - NODE_ENV=production
       - PORT=5000
 
+  # ==========================================
+  # Frontend Service Configuration (React + Nginx)
+  # ==========================================
   frontend:
     build:
+      # Build context folder
       context: ./frontend
+      # Pass compile-time arguments to React build stage
       args:
-        # Resolves to the VM's public IP during remote build, fallback to localhost for local testing
+        # Bake VM's public IP address (or fallback to localhost) into compiled JS assets
         - REACT_APP_API_URL=http://${VM_PUBLIC_IP:-localhost}:5000/api/tasks
+    # Map standard host HTTP port 80 to internal Nginx container port 80
     ports:
       - "80:80"
+    # Start order constraint: ensure backend service starts before compiling/spinning up frontend
     depends_on:
       - backend
