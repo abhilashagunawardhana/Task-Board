@@ -1,4 +1,3 @@
-# Docker Compose configuration specification version
 version: '3.8'
 
 services:
@@ -6,6 +5,7 @@ services:
   # Backend Service Configuration (Express API)
   # ==========================================
   backend:
+    image: task-board-backend:latest
     # Build container from Dockerfile in backend directory
     build: ./backend
     # Map external host port 5000 to internal container port 5000
@@ -20,6 +20,7 @@ services:
   # Frontend Service Configuration (React + Nginx)
   # ==========================================
   frontend:
+    image: task-board-frontend:latest
     build:
       # Build context folder
       context: ./frontend
