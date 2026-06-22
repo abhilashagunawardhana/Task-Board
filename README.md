@@ -1,6 +1,6 @@
 # Premium Task Board - Monorepo Infrastructure
 
-An enterprise-grade, containerized Full-Stack Task Board application built on a monorepo architecture. This project serves as a showcase for modern DevOps paradigms, featuring automated path-filtered continuous integration (CI) and secure continuous deployment (CD) onto an Azure Ubuntu VM via Docker Compose.
+An enterprise-grade, containerized Full-Stack Task Board application built on a monorepo architecture, supporting full CRUD task lifecycle actions (Create, Read, Update, Delete). This project serves as a showcase for modern DevOps paradigms, featuring automated path-filtered continuous integration (CI) and secure continuous deployment (CD) onto an Azure Ubuntu VM via Docker Compose.
 
 ---
 

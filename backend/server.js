@@ -45,6 +45,45 @@ app.post("/api/tasks", (req, res) => {
   res.status(201).json(newTask);
 });
 
+// HTTP PUT /api/tasks/:id: Updates an existing task's title and/or status
+app.put("/api/tasks/:id", (req, res) => {
+  const taskId = parseInt(req.params.id, 10);
+  const { title, status } = req.body;
+
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) {
+    return res.status(404).json({ error: "Task not found" });
+  }
+
+  // Update title if provided
+  if (title !== undefined) {
+    task.title = title;
+  }
+
+  // Update and validate status if provided
+  if (status !== undefined) {
+    if (!["Todo", "In Progress", "Done"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
+    task.status = status;
+  }
+
+  res.json(task);
+});
+
+// HTTP DELETE /api/tasks/:id: Permanently removes a task from the datastore
+app.delete("/api/tasks/:id", (req, res) => {
+  const taskId = parseInt(req.params.id, 10);
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  if (taskIndex === -1) {
+    return res.status(404).json({ error: "Task not found" });
+  }
+
+  tasks.splice(taskIndex, 1);
+  res.status(204).end();
+});
+
+
 // Start the Express listener only if the environment is not a Jest test runner.
 // This prevents Jest tests from leaving open port handlers or crashing due to 'Port in use' errors.
 if (process.env.NODE_ENV !== "test") {

@@ -54,6 +54,19 @@ The Express application exposes the following endpoints under the `/api/tasks` r
   ```
 * **Response Status**: `201 Created` (if successful) or `400 Bad Request` (if title parameter is missing).
 
+### 3. Update Task (Status/Title)
+* **Route**: `PUT /api/tasks/:id`
+* **Headers**: `Content-Type: application/json`
+* **Input Payload**: JSON object containing optional `title` and/or `status` properties.
+  ```json
+  { "status": "Done" }
+  ```
+* **Response Status**: `200 OK` (returns the updated task object) or `404 Not Found` (if ID does not exist) or `400 Bad Request` (if status value is invalid).
+
+### 4. Delete Task
+* **Route**: `DELETE /api/tasks/:id`
+* **Response Status**: `204 No Content` (if successful) or `404 Not Found` (if ID does not exist).
+
 ---
 
 ## Cross-Origin Resource Sharing (CORS) Configuration

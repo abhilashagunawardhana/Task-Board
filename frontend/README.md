@@ -30,6 +30,14 @@ The frontend image uses a multi-stage Docker setup:
 
 ---
 
+## Interactive Task Controls
+
+Each task card incorporates components that support direct CRUD updates:
+* **Status Selector**: A dropdown menu displaying options for `Todo`, `In Progress`, and `Done`. Changing the value immediately fires a `PUT` request to update the task in the database and shifts the card dynamically to the correct column.
+* **Delete Button**: A visual delete icon (`🗑️`) that triggers a `DELETE` request, wiping it from the database and removing the element immediately from the UI state.
+
+---
+
 ## Client-Side Network Bridging & Dynamic API Target
 
 Because React components compile down to static HTML and JavaScript assets running directly in the end-user's browser, hardcoded API endpoints will fail when deployed to a remote cloud machine.
