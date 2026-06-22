@@ -197,10 +197,27 @@ jobs:
           port: 22
           script: |
             cd ~/Task-Board
-            git pull origin main
-            docker-compose down
-            # Forcefully prune the old images from the engine cache
-            docker rmi task-board-backend:latest task-board-frontend-1 task-board-frontend task-board-backend || true
-            docker system prune -f
-            # Rebuild clean
-            VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }} docker-compose up --build --force-recreate -d
+            # Cleanly checkout and reset working directory to origin/main branch
+            git fetch --all
+            git checkout main
+            git reset --hard origin/main
+            
+            # Store VM Public IP
+            VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }}
+            
+            # Build the new code under temporary 'building' tags to avoid locking the active containers
+            docker build -t task-board-backend:building ./backend
+            docker build --build-arg REACT_APP_API_URL=http://${VM_PUBLIC_IP}:5000/api/tasks -t task-board-frontend:building ./frontend
+            
+            # Re-tag images to 'latest' instantaneously without locking running layers
+            docker tag task-board-backend:building task-board-backend:latest
+            docker tag task-board-frontend:building task-board-frontend:latest
+            
+            # Remove the temporary building tags
+            docker rmi task-board-backend:building task-board-frontend:building || true
+            
+            # Trigger Compose rolling recreate (updates containers in place with near-zero downtime)
+            VM_PUBLIC_IP=${VM_PUBLIC_IP} docker-compose up --force-recreate -d
+            
+            # Prune old dangling layers from previous builds to release disk space
+            docker image prune -f
