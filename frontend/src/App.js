@@ -80,6 +80,53 @@ function App() {
     }
   };
 
+  // API Call: Update an existing task's status via PUT request
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      const response = await fetch(`${API_URL}/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update task status');
+      }
+
+      const updatedTask = await response.json();
+      // Update state immediately
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === taskId ? updatedTask : t))
+      );
+      setError(null);
+    } catch (err) {
+      console.error('Failed to update task status:', err);
+      setError('Failed to update task status. Please try again.');
+    }
+  };
+
+  // API Call: Delete an existing task via DELETE request
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`${API_URL}/${taskId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+
+      // Remove the task from local state immediately
+      setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+      setError(null);
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+      setError('Failed to delete task. Please try again.');
+    }
+  };
+
   // Filter tasks locally by status for each column
   const todoTasks = tasks.filter((t) => t.status === 'Todo');
   const inProgressTasks = tasks.filter((t) => t.status === 'In Progress');
@@ -158,6 +205,24 @@ function App() {
                       <span className="task-id">#TSK-{task.id}</span>
                       <span className="task-tag">Todo</span>
                     </div>
+                    <div className="task-controls">
+                      <select
+                        className="task-status-select"
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                      >
+                        <option value="Todo">Todo</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                      </select>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteTask(task.id)}
+                        title="Delete Task"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -187,6 +252,24 @@ function App() {
                       <span className="task-id">#TSK-{task.id}</span>
                       <span className="task-tag">In Progress</span>
                     </div>
+                    <div className="task-controls">
+                      <select
+                        className="task-status-select"
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                      >
+                        <option value="Todo">Todo</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                      </select>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteTask(task.id)}
+                        title="Delete Task"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -215,6 +298,24 @@ function App() {
                     <div className="task-footer">
                       <span className="task-id">#TSK-{task.id}</span>
                       <span className="task-tag">Done</span>
+                    </div>
+                    <div className="task-controls">
+                      <select
+                        className="task-status-select"
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                      >
+                        <option value="Todo">Todo</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                      </select>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteTask(task.id)}
+                        title="Delete Task"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
                 ))
