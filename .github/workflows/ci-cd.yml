@@ -202,6 +202,9 @@ jobs:
             # Fetch latest git commits pushed to main branch
             git pull origin main
             
-            # Recompile and restart containers silently in detached background mode.
+            # Stop services and clear current container bindings to release image locks
+            docker-compose down
+            
+            # Recompile and restart containers cleanly in detached background mode.
             # Passes VM_PUBLIC_IP to compile React with the correct remote hostname URL.
-            VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }} docker-compose up --build -d
+            VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }} docker-compose up --build --force-recreate -d
