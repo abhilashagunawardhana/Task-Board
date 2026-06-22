@@ -25,11 +25,11 @@ jobs:
     steps:
       # Step 1.1: Clone the repository files onto the runner
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Step 1.2: Check paths of changed files against our configured filters
       - name: Detect Modified Paths
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           # Define filters. If files in these directories are modified, outputs will be 'true'.
@@ -57,11 +57,11 @@ jobs:
     steps:
       # Step 2.1: Clone code
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Step 2.2: Provision Node.js with caching configured for rapid rebuilds
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: 'npm'
@@ -96,7 +96,7 @@ jobs:
     steps:
       # Step 3.1: Clone repository
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Step 3.2: Verify that the backend Dockerfile builds correctly in a container
       - name: Build Docker Container (Verification)
@@ -115,11 +115,11 @@ jobs:
     steps:
       # Step 4.1: Clone code
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Step 4.2: Provision Node.js with package dependency caching
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: 'npm'
@@ -149,11 +149,11 @@ jobs:
     steps:
       # Step 5.1: Clone repository
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Step 5.2: Provision Node.js environment
       - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: 'npm'
