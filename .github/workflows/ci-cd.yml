@@ -191,8 +191,8 @@ jobs:
       - name: Run Deployment Scripts on Azure VM via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.AZURE_VM_IP }}
-          username: ${{ secrets.AZURE_VM_USERNAME }}
+          host: ${{ vars.AZURE_VM_IP }}
+          username: ${{ vars.AZURE_VM_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           timeout: "20m"
@@ -205,7 +205,7 @@ jobs:
             git reset --hard origin/main
             
             # Store VM Public IP
-            VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }}
+            VM_PUBLIC_IP=${{ vars.AZURE_VM_IP }}
             
             # Build the new code under temporary 'building' tags to avoid locking the active containers
             docker build -t task-board-backend:building ./backend
