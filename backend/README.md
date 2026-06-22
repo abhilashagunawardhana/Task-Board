@@ -4,7 +4,7 @@ A lightweight, robust REST API built with Node.js and Express. The backend acts 
 
 ---
 
-## 🛠️ Tech Stack & Isolation
+## Tech Stack & Isolation
 
 * **Engine**: Node.js v24 (Alpine-based Linux environment for containerization).
 * **Framework**: Express.js for REST router management.
@@ -13,7 +13,7 @@ A lightweight, robust REST API built with Node.js and Express. The backend acts 
 
 ---
 
-## 📂 Package Script Hooks
+## Package Script Hooks
 
 The backend package definition incorporates hooks to validate code quality before container compilation:
 
@@ -23,7 +23,7 @@ The backend package definition incorporates hooks to validate code quality befor
 
 ---
 
-## ⚙️ Container Environment Specification ([Dockerfile](file://./Dockerfile))
+## Container Environment Specification ([Dockerfile](file://./Dockerfile))
 
 The service runs inside a multi-stage Docker environment:
 * **Stage 1 (Builder)**: Installs development and production dependencies (`npm ci`) and copies the workspace code to run linting and unit test cycles.
@@ -31,7 +31,7 @@ The service runs inside a multi-stage Docker environment:
 
 ---
 
-## 🔌 API Endpoints & Routes
+## API Endpoints & Routes
 
 The Express application exposes the following endpoints under the `/api/tasks` root route:
 
@@ -56,7 +56,7 @@ The Express application exposes the following endpoints under the `/api/tasks` r
 
 ---
 
-## 🔒 Cross-Origin Resource Sharing (CORS) Configuration
+## Cross-Origin Resource Sharing (CORS) Configuration
 
 In a cloud container layout, the frontend is loaded into the user's browser from port `80`, while the backend API runs on port `5000`. By default, browsers block XMLHttpRequests (like fetch or axios) directed at a port or domain different from the origin page (Same-Origin Policy).
 

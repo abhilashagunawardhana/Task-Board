@@ -4,7 +4,7 @@ An enterprise-grade, containerized Full-Stack Task Board application built on a 
 
 ---
 
-## 🏗️ System Architecture & Workflow Diagram
+## System Architecture & Workflow Diagram
 
 The diagram below maps the complete lifecycle of a code change, from a local push on a development machine through parallel build validation pipelines in GitHub Actions, culminating in an automated rolling deployment on a remote cloud server.
 
@@ -63,7 +63,7 @@ The diagram below maps the complete lifecycle of a code change, from a local pus
 
 ---
 
-## 🛠️ DevOps Paradigms & CI/CD Pipeline
+## DevOps Paradigms & CI/CD Pipeline
 
 The integration and delivery configurations are managed in [.github/workflows/ci-cd.yml](file://./.github/workflows/ci-cd.yml).
 
@@ -86,7 +86,7 @@ The deployment job (`deploy-production`) triggers securely using `appleboy/ssh-a
 
 ---
 
-## ⚙️ Environment Setup & Port Routing
+## Environment Setup & Port Routing
 
 The infrastructure utilizes Docker Compose to organize port mapping and ensure clean network bridges.
 
