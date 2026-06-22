@@ -196,15 +196,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # Navigate to the monorepo folder cloned on the VM
             cd ~/Task-Board
-            
-            # Fetch latest git commits pushed to main branch
             git pull origin main
-            
-            # Stop services and clear current container bindings to release image locks
             docker-compose down
-            
-            # Recompile and restart containers cleanly in detached background mode.
-            # Passes VM_PUBLIC_IP to compile React with the correct remote hostname URL.
+            # Forcefully prune the old images from the engine cache
+            docker rmi task-board-backend:latest task-board-frontend-1 task-board-frontend task-board-backend || true
+            docker system prune -f
+            # Rebuild clean
             VM_PUBLIC_IP=${{ secrets.AZURE_VM_IP }} docker-compose up --build --force-recreate -d
