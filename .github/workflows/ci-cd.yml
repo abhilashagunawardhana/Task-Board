@@ -195,6 +195,8 @@ jobs:
           username: ${{ secrets.AZURE_VM_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
+          timeout: "20m"
+          command_timeout: "15m"
           script: |
             cd ~/Task-Board
             # Cleanly checkout and reset working directory to origin/main branch
