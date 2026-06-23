@@ -219,7 +219,7 @@ jobs:
             docker rmi task-board-backend:building task-board-frontend:building || true
             
             # Trigger Compose rolling recreate (updates containers in place with near-zero downtime)
-            VM_PUBLIC_IP=${VM_PUBLIC_IP} docker-compose up --force-recreate -d
+            VM_PUBLIC_IP=${VM_PUBLIC_IP} docker compose up --force-recreate -d
             
             # Prune old dangling layers from previous builds to release disk space
             docker image prune -f
